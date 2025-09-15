@@ -23,12 +23,12 @@ class CustomPathGenerator implements PathGenerator
     public function getPathForConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media): string
     {
         // Implement your custom logic here
-        return $this->getPath($media) . 'conversions/';
+        return md5($media->id . config('app.key')) . 'conversions/';
     }
 
     public function getPathForResponsiveImages(\Spatie\MediaLibrary\MediaCollections\Models\Media $media): string
     {
         // Implement your custom logic here
-        return $this->getPath($media) . 'responsive-images/';
+        return md5($media->id . config('app.key')) . 'responsive-images/';
     }
 }

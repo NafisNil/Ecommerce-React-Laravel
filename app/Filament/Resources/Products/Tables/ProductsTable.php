@@ -8,6 +8,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -19,6 +20,16 @@ class ProductsTable
         return $table
             ->columns([
                 //
+                SpatieMediaLibraryImageColumn::make('images')
+                    ->label('Image')
+                    ->collection('products')
+                    ->conversion('thumb')
+                    ->circular()
+                    ->height(50)
+                    ->width(50)
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->limit(1)
+                    ->columnSpan(1),
                 TextColumn::make('title')
                     ->label('Product Title')
                     ->searchable()
