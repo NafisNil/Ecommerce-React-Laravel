@@ -7,7 +7,6 @@ use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
 use App\Filament\Resources\Products\Schemas\ProductForm;
 use App\Filament\Resources\Products\Tables\ProductsTable;
-use App\Filament\Resources\Products\Pages\ProductVariationTypes;
 use App\Models\Product;
 use BackedEnum;
 use Filament\Pages\Enums\SubNavigationPosition;
@@ -47,7 +46,7 @@ class ProductResource extends Resource
             'index' => ListProducts::route('/'),
             'create' => CreateProduct::route('/create'),
             'edit' => EditProduct::route('/{record}/edit'),
-            'variation-types' => ProductVariationTypes::route('/{record}/variation-types'),
+            // Deprecated variation-types page removed; variation management now embedded in main edit form.
         ];
     }
 
@@ -55,7 +54,6 @@ class ProductResource extends Resource
     {
         return $page->generateNavigationItems([
             EditProduct::class,
-            ProductVariationTypes::class,
         ]);
     }
 }

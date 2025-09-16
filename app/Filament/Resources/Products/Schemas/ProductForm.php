@@ -9,6 +9,11 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TextInput as ComponentsTextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Select as ComponentsSelect;
+use App\Enums\ProductVariationTypesEnum;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 
@@ -102,6 +107,50 @@ class ProductForm
                     ->responsiveImages()
                     ->columnSpanFull()
                     ->helperText('Upload product images. You can drag to reorder. Changes save when you click Save.')
+                    ,
+                Repeater::make('variation_types')
+                    ->label('Variation Types')
+                    ->helperText('Define variation types (e.g. Color, Size) and their options.')
+                    ->collapsed()
+                    ->cloneable()
+                    ->reorderable()
+                    ->defaultItems(0)
+                    ->itemLabel(fn(array $state): ?string => $state['name'] ?? 'New Type')
+                    ->schema([
+                        ComponentsTextInput::make('name')
+                            ->label('Type Name')
+                            ->required()
+                            ->placeholder('e.g. Color, Size'),
+                        ComponentsSelect::make('types')
+                            ->label('Type')
+                            ->options(ProductVariationTypesEnum::labels())
+                            ->required()
+                            ->placeholder('Select variation type')
+                            ->searchable(),
+                        Repeater::make('options')
+                            ->label('Options')
+                            ->collapsed()
+                            ->reorderable()
+                            ->defaultItems(0)
+                            ->itemLabel(fn(array $state): ?string => $state['name'] ?? 'Option')
+                            ->schema([
+                                ComponentsTextInput::make('name')->label('Option Name')->required()->columnSpanFull(),
+                                SpatieMediaLibraryFileUpload::make('images')
+                                    ->label('Images')
+                                    ->collection('images')
+                                    ->multiple()
+                                    ->image()
+                                    ->panelLayout('grid')
+                                    ->reorderable()
+                                    ->appendFiles()
+                                    ->openable()
+                                    ->preserveFilenames()
+                                    ->columnSpanFull(),
+                            ])
+                            ->addActionLabel('Add Option'),
+                    ])
+                    ->addActionLabel('Add Variation Type')
+                    ->columnSpanFull()
             ]);
     }
 }

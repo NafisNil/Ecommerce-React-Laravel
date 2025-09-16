@@ -1,6 +1,6 @@
 <?php
-
 namespace App\Filament\Resources\Products\Pages;
+
 
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Product;
@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use App\Enums\ProductVariationTypesEnum;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 
 /**
  * Deprecated: Replaced by embedding SpatieMediaLibraryFileUpload directly in the main Product form.
@@ -26,16 +27,22 @@ class ProductVariationTypes extends EditRecord
 {
     use InteractsWithForms;
 
-    public static ?string $title = 'Product Variation Types';
-
     protected static string $resource = ProductResource::class;
 
-    protected Product $product; // Bound model
+   
+
+    public Model|int|string|null $record;
+     public static ?string $title = 'Manage Product Variations';
 
     public function mount($record): void
     {
-        $this->product = Product::findOrFail($record);
+        $this->record = Product::findOrFail($record);
+        $this->title = 'Manage Variations for ' . $this->record->name;
+        
+        parent::mount($record);
+        
     }
+
 
     public function form(Schema $schema): Schema
     {
@@ -57,8 +64,12 @@ class ProductVariationTypes extends EditRecord
                       
                    
                     Repeater::make('options')
-                        ->label('Options')
-                        ->schema([TextInput::make('value')->label('Value')->placeholder('e.g. Red, Large, 128GB')->required(), TextInput::make('code')->label('Code / SKU Suffix')->placeholder('Optional code')->maxLength(50)->helperText('Optional shorthand or SKU fragment.'), Toggle::make('active')->label('Active')->default(true)])
+                        ->label('Options')->relationship()
+                        ->schema([
+                            TextInput::make(('name'))->columnSpan(2)->required(),
+                            SpatieMediaLibraryFileUpload::make(('images'))->image()->multiple()->columnSpan(2)->openable()->panelLayout('grid')
+                            ->collection('images')->reorderable()->appendFiles()->preserveFilenames()
+                        ])
                         ->minItems(1)
                         ->collapsed()
                         ->itemLabel(fn(array $state): ?string => $state['value'] ?? null)
