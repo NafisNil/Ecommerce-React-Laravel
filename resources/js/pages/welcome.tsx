@@ -1,22 +1,12 @@
+import ProductItem from '@/components/App/ProductItem';
 import Authenticated from '@/layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
+import { PageProps, PaginationProps, Product } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
 export default function Welcome({
-auth,
-laravelVersion,
-phpVersion,
-}: PageProps<{ laravelVersion: string; phpVersion: string }>) {
-    const handleImageError = () => {
-    document
-    .getElementById('screenshot-container')
-    ?.classList.add('!hidden');
-    document.getElementById('docs-card')?.classList.add('!row-span-1');
-    document
-    .getElementById('docs-card-content')
-    ?.classList.add('!flex-row');
-    document.getElementById('background')?.classList.add('!hidden');
-    };
+    products
+}: PageProps<{ products: PaginationProps<Product> }>) {
+
 
     return (
     <Authenticated>
@@ -34,6 +24,12 @@ phpVersion,
                         <button className="btn btn-primary">Get Started</button>
                     </div>
                 </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 p-6">
+                {products.data.map(product => (
+                    <ProductItem key={product.id} product={product} />
+                ))}
             </div>
 
         </div>

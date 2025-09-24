@@ -2,21 +2,24 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use App\Enums\ProductStatusEnum;
 
 class Product extends Model implements HasMedia
 {
     //
     use InteractsWithMedia;
     protected $fillable = [
-        'title', 'slug', 'department_id', 'category_id', 'description', 'price', 'quantity', 'status', 'variation_types'
+        'title', 'slug', 'department_id', 'category_id', 'description', 'price', 'quantity', 'status'
     ];
 
     protected $casts = [
-        'variation_types' => 'array',
+        // no JSON variation_types now; using related tables variation_types & variation_type_options
     ];
     public function registerMediaConversions(?Media $media = null): void
     {
@@ -28,6 +31,11 @@ class Product extends Model implements HasMedia
         $this->addMediaConversion('small')
             ->width(480)
             ->height(360)
+            ->sharpen(10)
+            ->nonQueued();
+        $this->addMediaConversion('medium')
+            ->width(640)
+            ->height(480)
             ->sharpen(10)
             ->nonQueued();
         $this->addMediaConversion('large')
@@ -57,4 +65,24 @@ class Product extends Model implements HasMedia
     {
         return $this->hasMany(VariationType::class);
     }
+
+    public function scopeForVendor(Builder $query) : Builder
+    {
+        return $query->where('created_by', auth()->user()->id);
+    }
+
+    public function scopePublished(Builder $query) : Builder
+    {
+        return $query->where('status', ProductStatusEnum::PUBLISHED->value);
+    }
+
+    public function variations()
+    {
+        return $this->hasMany(ProductVariation::class, 'product_id');
+    }
+
+    public function user(){
+        return $this->belongsTo(User::class, 'created_by');
+    }
+    
 }

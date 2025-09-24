@@ -108,20 +108,20 @@ class ProductForm
                     ->columnSpanFull()
                     ->helperText('Upload product images. You can drag to reorder. Changes save when you click Save.')
                     ,
-                Repeater::make('variation_types')
+                Repeater::make('variationTypes')
                     ->label('Variation Types')
+                    ->relationship()
                     ->helperText('Define variation types (e.g. Color, Size) and their options.')
                     ->collapsed()
-                    ->cloneable()
                     ->reorderable()
                     ->defaultItems(0)
-                    ->itemLabel(fn(array $state): ?string => $state['name'] ?? 'New Type')
+                    ->itemLabel(fn($record): ?string => $record?->name ?? 'New Type')
                     ->schema([
                         ComponentsTextInput::make('name')
                             ->label('Type Name')
                             ->required()
                             ->placeholder('e.g. Color, Size'),
-                        ComponentsSelect::make('types')
+                        ComponentsSelect::make('type')
                             ->label('Type')
                             ->options(ProductVariationTypesEnum::labels())
                             ->required()
@@ -129,23 +129,23 @@ class ProductForm
                             ->searchable(),
                         Repeater::make('options')
                             ->label('Options')
+                            ->relationship()
                             ->collapsed()
                             ->reorderable()
                             ->defaultItems(0)
-                            ->itemLabel(fn(array $state): ?string => $state['name'] ?? 'Option')
+                            ->itemLabel(fn($record): ?string => $record?->name ?? 'Option')
                             ->schema([
                                 ComponentsTextInput::make('name')->label('Option Name')->required()->columnSpanFull(),
-                                SpatieMediaLibraryFileUpload::make('images')
-                                    ->label('Images')
-                                    ->collection('images')
+                                SpatieMediaLibraryFileUpload::make('option_images')
+                                    ->label('Option Images')
+                                    ->collection('option_images')
                                     ->multiple()
                                     ->image()
-                                    ->panelLayout('grid')
-                                    ->reorderable()
-                                    ->appendFiles()
                                     ->openable()
-                                    ->preserveFilenames()
-                                    ->columnSpanFull(),
+                                    ->reorderable()
+                                    ->responsiveImages()
+                                    ->columnSpanFull()
+                                    ->visible(fn (callable $get) => $get('../../type') === 'image'),
                             ])
                             ->addActionLabel('Add Option'),
                     ])
