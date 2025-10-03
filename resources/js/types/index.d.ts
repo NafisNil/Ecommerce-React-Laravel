@@ -9,34 +9,34 @@ export interface User {
     email_verified_at?: string;
 }
 
-export type Product ={
+export type ProductVariation = {
+    id: number;
+    price: number;
+    quantity: number | null;
+    variation_type_option_ids: number[]; // array of option ids composing this variation
+    sku?: string;
+};
+
+export type Product = {
     id: number;
     title: string;
     slug: string;
     price: number;
-    quantity: string;
-    image: string;
+    quantity: number | null;
+    image: string | null;
     images: Image[];
     description: string;
-    short_description: string;
-
-    user:{
-        id: number;
-        name: string;
-    }
-    department:{
+    short_description?: string;
+    user: {
         id: number;
         name: string;
     };
-    variationTypes: VariationType[],
-    variations: Array<{
+    department: {
         id: number;
-        price: number;
-        quantity: number;
-        variation_type_id: number;
-
-    }>[];
-
+        name: string;
+    };
+    variationTypes: VariationType[];
+    variations: ProductVariation[]; // flat array
 };
 
 export type Image = {
@@ -45,14 +45,14 @@ export type Image = {
     small: string;
     medium: string;
     large: string;
+    original?: string;
     alt_text?: string;
 };
 
 export type VariationTypeOption = {
     id: number;
     name: string;
-    image: Image[];
-    type:VariationType;
+    images: Image[]; // plural to align with API (ProductResource returns 'images')
 };
 
 export type VariationType = {

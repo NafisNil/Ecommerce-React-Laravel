@@ -19,8 +19,19 @@ class ProductController extends Controller
     }
 
     public function show(Product $product){
+        // Ensure all needed relations & media are eager loaded to prevent N+1 and guarantee presence
+        $product->load([
+            'variationTypes.options.media', // options with media
+            'media', // product images
+            'variations',
+            'department',
+            'user'
+        ]);
+
+        $productPayload = (new ProductResource($product))->toArray(request());
+
         return Inertia::render('Product/Show', [
-            'product' => new ProductResource($product),
+            'product' => $productPayload,
             'variationOptions' => request()->input('options', [])
         ]);
     }

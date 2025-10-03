@@ -14,7 +14,7 @@ class ProductResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+    return [
             'id' => $this->id,
             'title' => $this->title,
             'slug' => $this->slug,
@@ -25,13 +25,14 @@ class ProductResource extends JsonResource
             'images' => $this->getMedia('products')->map(function ($img) {
                 return [
                     'id' => $img->id,
-                    'thumb' => $img->getUrl('thumb'),
-                    'small' => $img->getUrl('small'),
-                    'medium' => $img->getUrl('medium'),
-                    'large' => $img->getUrl('large'),
+                    'thumb' => $img->hasGeneratedConversion('thumb') ? $img->getUrl('thumb') : $img->getUrl(),
+                    'small' => $img->hasGeneratedConversion('small') ? $img->getUrl('small') : $img->getUrl(),
+                    'medium' => $img->hasGeneratedConversion('medium') ? $img->getUrl('medium') : $img->getUrl(),
+                    'large' => $img->hasGeneratedConversion('large') ? $img->getUrl('large') : $img->getUrl(),
+                    'original' => $img->getUrl(),
                     'alt_text' => $img->custom_properties['alt_text'] ?? null,
                 ];
-            }),
+            })->values()->toArray(),
             'user' =>[
                 'id' => $this->user->id,
                 'name' => $this->user->name,
@@ -53,27 +54,26 @@ class ProductResource extends JsonResource
                             'images' => $opt->getMedia('option_images')->map(function ($img) {
                                 return [
                                     'id' => $img->id,
-                                    'thumb' => $img->getUrl('thumb'),
-                                    'small' => $img->getUrl('small'),
-                                    'medium' => $img->getUrl('medium'),
-                                    'large' => $img->getUrl('large'),
+                                    'thumb' => $img->hasGeneratedConversion('thumb') ? $img->getUrl('thumb') : $img->getUrl(),
+                                    'small' => $img->hasGeneratedConversion('small') ? $img->getUrl('small') : $img->getUrl(),
+                                    'medium' => $img->hasGeneratedConversion('medium') ? $img->getUrl('medium') : $img->getUrl(),
+                                    'large' => $img->hasGeneratedConversion('large') ? $img->getUrl('large') : $img->getUrl(),
+                                    'original' => $img->getUrl(),
                                     'alt_text' => $img->custom_properties['alt_text'] ?? null,
                                 ];
-                            })
+                            })->values()->toArray(),
                         ];
-                    }),
+                    })->values()->toArray(),
                 ];
-            }),
+            })->values()->toArray(),
             'variations' => $this->variations()->get()->map(function ($var) {
                 return [
                     'id' => $var->id,
                     'price' => $var->price,
                     'quantity' => $var->quantity,
-                    // 'variation_type_id' => $var->variation_type_id,
                     'variation_type_option_ids' => $var->variation_type_option_ids,
-                    // You can include more fields as needed
                 ];
-            }),
+            })->values()->toArray(),
         ];
     }
 }
