@@ -12,7 +12,7 @@ class ProductController extends Controller
 {
     //
     public function index(){
-        $products = Product::query()->published()->paginate(12);
+        $products = Product::query()->forWebsite()->paginate(12);
         return Inertia::render('Welcome', [
             'products' => ProductListResource::collection($products)
         ]);

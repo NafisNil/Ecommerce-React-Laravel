@@ -50,4 +50,6 @@ class VariationTypeOption extends Model implements HasMedia
                 ->useDisk('public')
                 ->withResponsiveImages();
         }
+
+
 }
