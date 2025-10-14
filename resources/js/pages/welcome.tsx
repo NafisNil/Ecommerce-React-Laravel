@@ -1,6 +1,6 @@
 import ProductItem from '@/components/App/ProductItem';
 import Authenticated from '@/layouts/AuthenticatedLayout';
-import { PageProps, PaginationProps, Product } from '@/types';
+import type { PageProps, PaginationProps, Product } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
 export default function Welcome({

@@ -62,6 +62,25 @@ export type VariationType = {
     options: VariationTypeOption[];
 };
 
+export type CartItem = {
+    id: number;
+    product_id: number;
+    title: string;
+    slug: string;
+    image: string | null;
+    quantity: number;
+    price: number;
+    option_ids: Record<string, number | null>; // key-value pairs of variation_type_id and option_id
+    options: VariationTypeOption[]; // array of selected options
+};
+
+export type GroupedCartItems = {
+    items: CartItem[];
+    user: User | null;
+    total_price: number;
+    total_quantity: number;
+};
+
 export type PaginationProps<T> = {
     data: Array<T>;
     per_page: number;
@@ -73,8 +92,12 @@ export type PaginationProps<T> = {
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
+    csrf_token: string;
     auth: {
         user: User;
     };
     ziggy: Config & { location: string };
+    cart_total_quantity: number;
+    cart_total_price: number;
+    cart_items: CartItem[];
 };

@@ -6,11 +6,21 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 
+type PageProps = {
+    auth: {
+        user: any;
+    };
+    flash: {
+        success?: string;
+        error?: string;
+    };
+};
+
 export default function Authenticated({
     header,
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
-    const user = usePage().props.auth.user;
+    const { auth, flash } = usePage<PageProps>().props;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
@@ -26,7 +36,16 @@ export default function Authenticated({
                     </div>
                 </header>
             )}
-
+            {flash.success && (
+                <div className="bg-green-500 text-white p-4 text-center">
+                    {flash.success}
+                </div>
+            )}
+            {flash.error && (
+                <div className="bg-red-500 text-white p-4 text-center">
+                    {flash.error}
+                </div>
+            )}
             <main>{children}</main>
         </div>
     );
