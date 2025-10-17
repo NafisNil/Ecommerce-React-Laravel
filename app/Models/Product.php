@@ -105,5 +105,42 @@ class Product extends Model implements HasMedia
         // return $basePrice + $additionalPrice;
 
     }
+
+    public function getImageForOptions(array|string|null $optionIds = [])
+    {
+        // Normalize input to an array of IDs
+        if (is_string($optionIds)) {
+            $decoded = json_decode($optionIds, true);
+            $optionIds = is_array($decoded) ? $decoded : [];
+        }
+
+        $ids = array_values(is_array($optionIds) ? $optionIds : []);
+        if (!empty($ids)) {
+            sort($ids);
+            $options = VariationTypeOption::whereIn('id', $ids)->get();
+            foreach ($options as $option) {
+                // Use the correct collection name defined in VariationTypeOption
+                $image = $option->getFirstMediaUrl('option_images', 'small');
+                if ($image) {
+                    return $image;
+                }
+            }
+        }
+        return $this->getFirstMediaUrl('products', 'small');
+        // foreach ($this->variations as $key => $variation) {
+        //     $a = $variation->variation_type_option_ids;
+        //     sort($a);
+        //     if ($a === $optionIds) {
+        //         if ($variation->image) {
+        //             return $variation->getFirstMediaUrl('variations', 'small') ?: $this->getFirstMediaUrl('products', 'small');
+        //         }else{
+        //             return $this->getFirstMediaUrl('products', 'small');
+        //         }
+        //     }
+        // }
+        // return $this->getFirstMediaUrl('products', 'small');
+        // return $basePrice + $additionalPrice;
+
+    }
     
 }

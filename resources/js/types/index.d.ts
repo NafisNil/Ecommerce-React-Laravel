@@ -1,6 +1,7 @@
 import { Config } from 'ziggy-js';
 import { id } from 'filepond/locale/id-id';
 import { type } from '../../../vendor/laravel/wayfinder/resources/js/wayfinder';
+import { store } from '../routes/login/index';
 
 export interface User {
     id: number;
@@ -101,3 +102,33 @@ export type PageProps<
     cart_total_price: number;
     cart_items: CartItem[];
 };
+
+export type OrderItem = {
+    id: number;
+    quantity: number;
+    price: number;
+    variation_type_option_ids: number[]; // array of option ids composing this variation
+    product:{
+        id: number;
+        title: string;
+        slug: string;
+        description: string | null;
+        image : string | null;
+    }
+};
+
+export type Order ={
+    id: number;
+    total_price: number;
+    status:string
+    created_at:string
+    vendorUser: {
+        id: number;
+        name: string;
+        email: string;
+        shop_name: string | null;
+        shop_address: string | null;
+
+    };
+    items: OrderItem[];
+}

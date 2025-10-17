@@ -127,6 +127,6 @@ return [
     'stripe_secret_key' => env('STRIPE_SECRET'),
     'stripe_public_key' => env('STRIPE_KEY'),
     'stripe_webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
-
+    'platform_fee_percent' => 10, // Platform fee percentage (e.g., 10 for 10%)
 
 ];

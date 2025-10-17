@@ -19,7 +19,12 @@ Route::controller(CartController::class)->group(function () {
     Route::delete('/cart/clear', 'clear')->name('cart.clear');
 });
 
-Route::post('stripe/webhook', [StripeController::class, 'webhook'])->name('stripe.webhook');
+Route::post('stripe/webhook', [StripeController::class, 'webhook'])
+    ->name('stripe.webhook')
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
+// Allow Stripe CLI default '/webhook' path as well
+Route::post('webhook', [StripeController::class, 'webhook'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
 
 // Route::get('/cart/store/{product}', function(){
 
