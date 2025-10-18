@@ -11,6 +11,8 @@ use Inertia\Inertia;
 Route::get('/', [ProductController::class, 'index'])->name('dashboard');
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 
+
+
 Route::controller(CartController::class)->group(function () {
     Route::get('/cart', 'index')->name('cart.index');
     Route::post('/cart/store/{product}', 'store')->name('cart.store');

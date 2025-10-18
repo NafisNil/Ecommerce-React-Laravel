@@ -18,8 +18,8 @@ class VendorUserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'shop_name' => $this->shop_name,
-            'shop_address' => $this->shop_address,
+            'shop_name' => $this->vendor?->shop_name,
+            'shop_address' => $this->vendor?->shop_address,
             
         ];
     }

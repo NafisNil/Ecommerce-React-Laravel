@@ -8,6 +8,14 @@ export interface User {
     name: string;
     email: string;
     email_verified_at?: string;
+    vendor?: {
+        id: number;
+        status: string;
+        status_label: string;
+        shop_name: string;
+        shop_address: string;
+        cover_image: string | null;
+    } | null;
 }
 
 export type ProductVariation = {

@@ -21,7 +21,7 @@ class OrderViewResource extends JsonResource
             'total_amount' => $this->total_amount,
             'total_price' => $this->total_price,
             'created_at' => $this->created_at->toDateTimeString(),
-             'vendorUser' => new VendorUserResource($this->vendorUser),
+             'vendorUser' => $this->vendorUser ? (new VendorUserResource($this->vendorUser))->toArray($request) : null,
              'orderItems' => $this->orderItems->map(function ($item) {
                  return [
                      'id' => $item->id,

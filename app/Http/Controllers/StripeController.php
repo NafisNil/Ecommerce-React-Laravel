@@ -9,7 +9,10 @@ use Stripe\Stripe;
 use Stripe\StripeClient;
 use App\Enums\OrderStatusEnum;
 use App\Http\Resources\OrderViewResource;
+use App\Mail\CheckoutCompleted;
+use App\Mail\NewOrderMail;
 use App\Models\CartItem;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class StripeController extends Controller
@@ -19,7 +22,7 @@ class StripeController extends Controller
     {
     $user = $request->user();
         $session_id = $request->get('session_id');
-        $orders = Order::with(['vendorUser', 'orderItems.product'])
+        $orders = Order::with(['vendorUser.vendor', 'orderItems.product'])
             ->where('stripe_session_id', $session_id)
             ->get();
         if ($orders->count() === 0) {
@@ -69,9 +72,9 @@ class StripeController extends Controller
             return response()->json(['error' => 'Invalid signature'], 400);
         }
 
-    Log::info("===============================================");
-    Log::info('Stripe Webhook Event Verified: ', ['type' => $event->type]);
-    Log::info('Event Data: ', $event->data->toArray());
+    // Log::info("===============================================");
+    // Log::info('Stripe Webhook Event Verified: ', ['type' => $event->type]);
+    // Log::info('Event Data: ', $event->data->toArray());
 
         // Handle the event
         switch ($event->type) {
@@ -102,6 +105,7 @@ class StripeController extends Controller
                     $order->save();
                     # code...
                 }
+
                 Log::info('Charge was updated successfully!');
                 // Then define and call a method to handle the successful charge update.
                 // handleChargeUpdated($charge);
@@ -109,13 +113,26 @@ class StripeController extends Controller
             case 'checkout.session.completed':
                 $session = $event->data->object; // contains a \Stripe\Checkout\Session
                 $pi = $session['payment_intent'];
-                $orders = Order::query()->where('stripe_session_id', $session->id)->get();
+                $orders = Order::with(['user', 'vendorUser.vendor', 'orderItems.product'])
+                    ->where('stripe_session_id', $session->id)
+                    ->get();
                 $productsToDeletedFromCart = [];
                 foreach ($orders as $key => $order) {
                     # code...
                     $order->payment_intent = $pi;
                     $order->status = OrderStatusEnum::Paid;
                     $order->save();
+                    
+                    // Send email to vendor with error handling
+                    try {
+                        if ($order->vendorUser && $order->vendorUser->email) {
+                            Mail::to($order->vendorUser->email)->send(new NewOrderMail($order));
+                            Log::info('Vendor email sent successfully for order: ' . $order->id);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send vendor email for order: ' . $order->id . ' - ' . $e->getMessage());
+                    }
+                    
                     $productsToDeletedFromCart =[
                         ...$productsToDeletedFromCart,
                        ...$order->orderItems->map(fn($item) => $item->product_id)->toArray()
@@ -140,7 +157,19 @@ class StripeController extends Controller
                     }
                 }
 
+                // Send email to customer with error handling
+                try {
+                    if ($orders->first() && $orders->first()->user && $orders->first()->user->email) {
+                        Mail::to($orders->first()->user->email)->send(new CheckoutCompleted($orders));
+                        Log::info('Customer email sent successfully for session: ' . $session->id);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to send customer email for session: ' . $session->id . ' - ' . $e->getMessage());
+                }
+
                 CartItem::query()->where('user_id', $orders->first()->user_id)->whereIn('product_id', $productsToDeletedFromCart)->delete();
+                
+                Log::info('Checkout session completed successfully!');
                 // Then define and call a method to handle the successful checkout session completion.
                 // handleCheckoutSessionCompleted($session);
                 break;
