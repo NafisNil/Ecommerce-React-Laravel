@@ -3,10 +3,12 @@
 namespace App\Http\Middleware;
 
 use App\Http\Resources\AuthUserResource;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 use App\Service\CartService;
+use App\Http\Resources\DepartmentResource;
 class HandleInertiaRequests extends Middleware
 {
     /**
@@ -35,6 +37,7 @@ class HandleInertiaRequests extends Middleware
         $totalQuantity = $cartService->getTotalQuantity();
         $totalPrice = $cartService->getTotalPrice();
     $cartItems = $cartService->getCartItems();
+        $departments = Department::published()->with('categories')->orderBy('created_at', 'desc')->limit(10)->get();
 
         return [
             ...parent::share($request),
@@ -54,6 +57,8 @@ class HandleInertiaRequests extends Middleware
             'cart_items' => $cartItems,
             'cart_total_quantity' => $totalQuantity,
             'cart_total_price' => $totalPrice,
+            'departments' => DepartmentResource::collection($departments)->toArray($request),
+            'keyword' => $request->input('keyword', null),
         ];
     }
 }

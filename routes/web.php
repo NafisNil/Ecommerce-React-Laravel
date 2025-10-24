@@ -4,12 +4,17 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\StripeController;
+use App\Http\Controllers\VendorController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+use function Pest\Laravel\get;
+
 Route::get('/', [ProductController::class, 'index'])->name('dashboard');
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/s/{vendor:shop_name}', [VendorController::class, 'profile'])->name('vendor.profile');
+Route::get('/departments/{department:slug}', [ProductController::class, 'productByDepartment'])->name('departments.products');
 
 
 
@@ -41,10 +46,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+
     Route::middleware(['verified'])->group(function () {
             Route::get('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
             Route::get('stripe/success', [StripeController::class, 'success'])->name('stripe.success');
             Route::get('stripe/failure', [StripeController::class, 'failure'])->name('stripe.failure');
+            Route::post('/become-a-vendor', [VendorController::class, 'store'])->name('vendor.store');
             
     });
 

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use App\Enums\VendorStatusEnum;
 use App\Enums\ProductStatusEnum;
 
 class Product extends Model implements HasMedia
@@ -71,6 +72,8 @@ class Product extends Model implements HasMedia
         return $query->where('created_by', auth()->user()->id);
     }
 
+
+
     public function scopePublished(Builder $query) : Builder
     {
         return $query->where('status', ProductStatusEnum::PUBLISHED->value);
@@ -78,8 +81,13 @@ class Product extends Model implements HasMedia
 
     public function scopeForWebsite(Builder $query) : Builder
     {
-        return $query->where('status', ProductStatusEnum::PUBLISHED->value)
-                     ->where('quantity', '>', 0);
+        return $query->where('products.status', ProductStatusEnum::PUBLISHED->value)
+                     ->where('quantity', '>', 0)->vendorApproved();
+    }
+
+    public function scopeVendorApproved(Builder $query){
+        return $query->join('vendors', 'vendors.user_id', '=', 'products.created_by')
+                     ->where('vendors.status', '=', VendorStatusEnum::Approved->value);
     }
 
     public function variations()

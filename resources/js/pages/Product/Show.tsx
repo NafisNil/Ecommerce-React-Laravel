@@ -1,11 +1,46 @@
-import { Product, VariationTypeOption, ProductVariation } from '@/types';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Link as LinkIcon } from 'lucide-react';
 import React from 'react';
 import Authenticated from '@/layouts/AuthenticatedLayout';
 import Carousel from '@/components/Core/Carousel';
 // Removed generic currency icon; using explicit formatter instead
 import CurrencyFormatter from '@/components/Core/CurrencyFormatter';
 // Removed unused imports
+
+// Local structural types to avoid module resolution issues with '@/types'
+type Image = {
+    id: number;
+    thumb?: string;
+    small?: string;
+    medium?: string;
+    large?: string;
+};
+
+type VariationTypeOption = {
+    id: number;
+    name: string;
+    images?: Image[];
+};
+
+type ProductVariation = {
+    price: number;
+    quantity: number | null;
+    variation_type_option_ids: number[];
+};
+
+type Product = {
+    id: number;
+    title: string;
+    description: string;
+    price: number;
+    quantity: number | null;
+    images?: Image[];
+    variationTypes?: Array<{ id: number; name: string; type: string; options?: VariationTypeOption[] }>;
+    variation_types?: unknown; // allow alternate key from backend
+    variations?: ProductVariation[];
+    user: { name: string; shop_name?: string | null };
+    department: { name: string };
+};
 
 function Show({ product, variationOptions }: { product: Product; variationOptions: number[] | Record<number, number> }) {
     // console.log(product, variationOptions);
@@ -85,16 +120,20 @@ function Show({ product, variationOptions }: { product: Product; variationOption
     const initializedRef = React.useRef(false);
     React.useEffect(() => {
         if (initializedRef.current) return; // run only once
-        const vt = Array.isArray(product.variationTypes) ? product.variationTypes : [];
+        const vt: Array<{ id: number; options?: VariationTypeOption[] }> = Array.isArray(product.variationTypes)
+            ? (product.variationTypes as Array<{ id: number; options?: VariationTypeOption[] }>)
+            : [];
         if (!vt.length) return;
         const optionsLookup: Record<number, number> = Array.isArray(variationOptions)
             ? variationOptions.reduce((acc, val, idx) => { if (val != null) acc[idx] = val; return acc; }, {} as Record<number, number>)
             : (variationOptions || {});
         let anyApplied = false;
-        vt.forEach(type => {
+        vt.forEach((type) => {
             const selectedOptionId = optionsLookup[type.id];
             if (selectedOptionId) {
-                const found = Array.isArray(type.options) ? type.options.find(o => o.id === selectedOptionId) || null : null;
+                const found = Array.isArray(type.options)
+                    ? type.options.find((o: VariationTypeOption) => o.id === selectedOptionId) || null
+                    : null;
                 if (found && (!selectedVariation[type.id] || selectedVariation[type.id]?.id !== found.id)) {
                     anyApplied = true;
                     setSelectedVariation(prev => ({ ...prev, [type.id]: found }));
@@ -249,6 +288,7 @@ function Show({ product, variationOptions }: { product: Product; variationOption
     return (
         <Authenticated>
             <Head title={product.title}/>
+
             <div className="container mx-auto px-4 py-6 lg:py-8 text-[17px] leading-relaxed md:text-lg">
                 <div className='grid gap-6 lg:gap-8 grid-cols-1 lg:grid-cols-12'>
                     <div className="col-span-7 flex flex-col gap-4">
@@ -260,6 +300,18 @@ function Show({ product, variationOptions }: { product: Product; variationOption
                     </div>
                     <div className="col-span-5">
                         <h1 className='text-4xl font-bold mb-4 leading-tight tracking-tight'>{product.title}</h1>
+                        <p className='text-sm text-neutral-500 mb-2'>
+                            by{' '}
+                            {product.user.shop_name ? (
+                                <Link href={route('vendor.profile', product.user.shop_name)} className='link link-hover'>
+                                    {product.user.name}
+                                </Link>
+                            ) : (
+                                <span>{product.user.name}</span>
+                            )}
+                            &nbsp;
+                            <Link href="/" className='link link-hover'> <LinkIcon className='inline mb-1' size={16}/> {product.department.name}</Link>
+                        </p>
                         {/* Debug block removed after verification */}
                         {/* <p className='mb-4'>{product.description}</p> */}
                         <div className="mb-4 pb-3 border-b border-neutral-200 flex items-end justify-between">

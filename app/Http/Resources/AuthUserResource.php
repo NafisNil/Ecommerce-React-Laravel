@@ -25,7 +25,7 @@ class AuthUserResource extends JsonResource
             'roles' => $this->getRoleNames(),
             'vendor' => !$this->vendor?null:[
                 'status'=>$this->vendor->status,
-                'status_label'=>VendorStatusEnum::from($this->vendor->status)->label(),
+                'status_label'=>VendorStatusEnum::from($this->vendor->status),
                 'shop_name'=>$this->vendor->shop_name,
                 'shop_address'=>$this->vendor->shop_address,
                 'cover_image'=>$this->vendor->cover_image,

@@ -43,6 +43,8 @@ export type Product = {
     department: {
         id: number;
         name: string;
+        shop_name: string;
+        slug: string;
     };
     variationTypes: VariationType[];
     variations: ProductVariation[]; // flat array
@@ -109,6 +111,7 @@ export type PageProps<
     cart_total_quantity: number;
     cart_total_price: number;
     cart_items: CartItem[];
+    departments: Department[];
 };
 
 export type OrderItem = {
@@ -140,3 +143,22 @@ export type Order ={
     };
     items: OrderItem[];
 }
+
+export type Department = {
+    id: number;
+    name: string;
+    slug: string;
+    active: boolean;
+    categories: Category[];
+    meta_title?: string;
+    meta_description?: string;
+
+};
+
+export type Category = {
+    id: number;
+    name: string;
+    slug: string;
+    department_id: number;
+    active: boolean;
+};

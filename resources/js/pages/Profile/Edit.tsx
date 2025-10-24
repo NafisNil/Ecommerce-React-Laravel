@@ -4,6 +4,7 @@ import { Head } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import VendorDetails from './Partials/VendorDetails';
 
 export default function Edit({
     mustVerifyEmail,
@@ -37,6 +38,9 @@ export default function Edit({
                         <DeleteUserForm className="max-w-xl" />
                     </div>
                 </div>
+            </div>
+            <div className='mx-auto max-w-7xl sm:px-6 lg:px-8 pb-12'>
+                <VendorDetails />
             </div>
         </AuthenticatedLayout>
     );

@@ -2,15 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\VendorStatusEnum;
 use Illuminate\Http\Request;
 use App\Models\Vendor;
+use App\RolesEnum;
+use App\Models\Product;
+use Inertia\Inertia;
+use App\Http\Resources\ProductListResource;
+
 class VendorController extends Controller
 {
     //
     public function profile(Vendor $vendor)
     {
-        return view('vendor.profile', [
+        $products = Product::query()->forWebsite()->where('created_by', $vendor->user_id)->paginate(12);
+        return Inertia::render('Vendor/Profile', [
             'vendor' => $vendor,
+            'products' => ProductListResource::collection($products),
         ]);
 
     }
@@ -18,19 +26,23 @@ class VendorController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'shop_name' => 'required|string|max:255',
-            'shop_address' => 'required|string|max:255',
-            'shop_description' => 'nullable|string',
+            'shop_name' =>['required', 'regex:/^[a-z0-9-]+$/', 'unique:vendors,shop_name,'.$request->user()->id.',user_id', 'max:50'],
+            'shop_address' => ['required', 'string', 'max:255'],
+          
+        ],[
+            'shop_name.regex' => 'The shop name may only contain lowercase letters, numbers, and hyphens.',
+            'shop_name.unique' => 'The shop name has already been taken.',
         ]);
 
-        $vendor = Vendor::updateOrCreate(
-            ['user_id' => $request->user()->id],
-            [
-                'shop_name' => $request->shop_name,
-                'shop_address' => $request->shop_address,
-                'shop_description' => $request->shop_description,
-            ]
-        );
+        $user = $request->user();
+        $vendor = $user->vendor ?? new Vendor();
+        $vendor->user_id = $user->id;
+        $vendor->shop_name = $request->input('shop_name');
+        $vendor->shop_address = $request->input('shop_address');
+        $vendor->status = VendorStatusEnum::Approved;
+        $vendor->save();
+
+        $user->assignRole(RolesEnum::Vendor);
 
         return redirect()->back()->with('success', 'Vendor profile updated successfully.');
     }
