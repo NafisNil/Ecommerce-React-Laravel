@@ -9,6 +9,7 @@ use App\RolesEnum;
 use App\Models\Product;
 use Inertia\Inertia;
 use App\Http\Resources\ProductListResource;
+use Illuminate\Support\Facades\Storage;
 
 class VendorController extends Controller
 {
@@ -28,7 +29,7 @@ class VendorController extends Controller
         $request->validate([
             'shop_name' =>['required', 'regex:/^[a-z0-9-]+$/', 'unique:vendors,shop_name,'.$request->user()->id.',user_id', 'max:50'],
             'shop_address' => ['required', 'string', 'max:255'],
-          
+            'cover_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ],[
             'shop_name.regex' => 'The shop name may only contain lowercase letters, numbers, and hyphens.',
             'shop_name.unique' => 'The shop name has already been taken.',
@@ -39,6 +40,15 @@ class VendorController extends Controller
         $vendor->user_id = $user->id;
         $vendor->shop_name = $request->input('shop_name');
         $vendor->shop_address = $request->input('shop_address');
+        // Handle cover image upload
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('vendor-covers', 'public');
+            if (!empty($vendor->cover_image)) {
+                Storage::disk('public')->delete($vendor->cover_image);
+            }
+            $vendor->cover_image = $path;
+        }
+
         $vendor->status = VendorStatusEnum::Approved;
         $vendor->save();
 

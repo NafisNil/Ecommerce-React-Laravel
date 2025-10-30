@@ -1,29 +1,18 @@
 import Navbar from '@/components/App/Navbar';
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useState } from 'react';
+import Footer from '@/components/App/Footer';
+import { usePage } from '@inertiajs/react';
+import { PropsWithChildren, ReactNode } from 'react';
 
 type PageProps = {
-    auth: {
-        user: any;
-    };
-    flash: {
-        success?: string;
-        error?: string;
-    };
+    auth: { user: unknown };
+    flash: { success?: string; error?: string };
 };
 
 export default function Authenticated({
     header,
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
-    const { auth, flash } = usePage<PageProps>().props;
-
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const { flash } = usePage<PageProps>().props;
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -47,6 +36,7 @@ export default function Authenticated({
                 </div>
             )}
             <main>{children}</main>
+            <Footer />
         </div>
     );
 }

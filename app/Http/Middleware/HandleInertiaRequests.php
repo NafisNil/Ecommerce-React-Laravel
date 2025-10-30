@@ -9,6 +9,7 @@ use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 use App\Service\CartService;
 use App\Http\Resources\DepartmentResource;
+use App\Models\WishlistItem;
 class HandleInertiaRequests extends Middleware
 {
     /**
@@ -59,6 +60,8 @@ class HandleInertiaRequests extends Middleware
             'cart_total_price' => $totalPrice,
             'departments' => DepartmentResource::collection($departments)->toArray($request),
             'keyword' => $request->input('keyword', null),
+            'wishlist_count' => fn () => $request->user() ? WishlistItem::where('user_id', $request->user()->id)->count() : 0,
+            'wishlist_product_ids' => fn () => $request->user() ? WishlistItem::where('user_id', $request->user()->id)->pluck('product_id')->toArray() : [],
         ];
     }
 }

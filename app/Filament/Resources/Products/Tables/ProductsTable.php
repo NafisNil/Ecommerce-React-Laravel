@@ -61,6 +61,23 @@ class ProductsTable
                     ->wrap()
                     ->tooltip(fn ($record) => $record->category?->name)
                     ->columnSpan(1),
+                TextColumn::make('is_featured')
+                    ->label('Featured')
+                    ->formatStateUsing(fn ($state) => $state ? 'Yes' : 'No')
+                    ->badge()
+                    ->colors([
+                        'success' => fn($state) => (bool)$state,
+                        'gray' => fn($state) => !(bool)$state,
+                    ])
+                    ->toggleable(),
+                TextColumn::make('offered_price')
+                    ->label('Offer')
+                    ->formatStateUsing(function ($state, $record) {
+                        return $record->is_offered && $record->offered_price !== null
+                            ? number_format((float)$record->offered_price, 2)
+                            : '-';
+                    })
+                    ->toggleable(),
                     TextColumn::make('created_at')->dateTime('M d, Y')
             ])
             ->filters([

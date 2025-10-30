@@ -5,6 +5,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\VendorController;
+use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\AdminSliderController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -12,6 +14,7 @@ use Inertia\Inertia;
 use function Pest\Laravel\get;
 
 Route::get('/', [ProductController::class, 'index'])->name('dashboard');
+Route::get('/shop', [ProductController::class, 'shop'])->name('shop.index');
 Route::get('/products/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/s/{vendor:shop_name}', [VendorController::class, 'profile'])->name('vendor.profile');
 Route::get('/departments/{department:slug}', [ProductController::class, 'productByDepartment'])->name('departments.products');
@@ -52,6 +55,11 @@ Route::middleware('auth')->group(function () {
             Route::get('stripe/success', [StripeController::class, 'success'])->name('stripe.success');
             Route::get('stripe/failure', [StripeController::class, 'failure'])->name('stripe.failure');
             Route::post('/become-a-vendor', [VendorController::class, 'store'])->name('vendor.store');
+        // Wishlist
+        Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+        Route::post('/wishlist/toggle/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+        // Admin slider quick delete route (used by Filament table HTML action)
+        Route::delete('/admin/sliders/{slider}', [AdminSliderController::class, 'destroy'])->name('admin.sliders.destroy');
             
     });
 

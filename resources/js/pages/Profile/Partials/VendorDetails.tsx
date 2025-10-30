@@ -1,19 +1,22 @@
 import { useForm, usePage } from "@inertiajs/react";
-import { Link } from "lucide-react";
 import { FormEventHandler, useState } from "react";
+
+type AuthUser = { vendor?: { shop_name?: string; shop_address?: string; cover_image?: string | null; status?: string; status_label?: string } | null };
+type VendorForm = { shop_name: string; shop_address: string; cover_image: File | null };
 
 export default function VendorDetails({className = ''}: {className?: string}) {
     const [showBecomeVendor, setShowBecomeVendor] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const user = usePage<{ auth: { user?: Record<string, any> | null } }>().props.auth?.user ?? null;
+    const user = usePage<{ auth: { user?: AuthUser | null } }>().props.auth?.user ?? null;
     const token = usePage<{ csrf_token: string }>().props.csrf_token;
 
     const {
         data, setData, post, processing, errors, recentlySuccessful
-    } = useForm({
+    } = useForm<VendorForm>({
         shop_name: user?.vendor?.shop_name || '',
         shop_address: user?.vendor?.shop_address || '',
+        cover_image: null as File | null,
     });
     const onShopNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setData('shop_name', e.target.value.toLowerCase().replace(/\s+/g, '-'));
@@ -23,11 +26,12 @@ export default function VendorDetails({className = ''}: {className?: string}) {
         setSuccessMessage('');
         setErrorMessage('');
         post(route('vendor.store'), {
-            onSuccess: (response) => {
+            forceFormData: true,
+            onSuccess: () => {
                 setSuccessMessage('Your request to become a vendor has been submitted successfully.');
                 setShowBecomeVendor(false);
             },
-            onError: (errors) => {
+            onError: () => {
                 setErrorMessage('There was an error submitting your request. Please try again.');
             }
         });
@@ -38,11 +42,12 @@ export default function VendorDetails({className = ''}: {className?: string}) {
          setSuccessMessage('');
         setErrorMessage('');
         post(route('vendor.store'), {
-            onSuccess: (response) => {
+            forceFormData: true,
+            onSuccess: () => {
                 setSuccessMessage('Your request to become a vendor has been submitted successfully.');
                 setShowBecomeVendor(false);
             },
-            onError: (errors) => {
+            onError: () => {
                 setErrorMessage('There was an error submitting your request. Please try again.');
             }
         });
@@ -83,7 +88,7 @@ export default function VendorDetails({className = ''}: {className?: string}) {
             </div>
 
             {showBecomeVendor && (
-                <form onSubmit={user?.vendor ? updateVendor : becomeVendor} className="mt-4 space-y-4">
+                <form onSubmit={user?.vendor ? updateVendor : becomeVendor} className="mt-4 space-y-4" encType="multipart/form-data">
                     {errorMessage && <div className="alert alert-error">{errorMessage}</div>}
                     {successMessage && <div className="alert alert-success">{successMessage}</div>}
                     <div className="form-control">
@@ -113,6 +118,24 @@ export default function VendorDetails({className = ''}: {className?: string}) {
                             required
                         />
                         {errors.shop_address && <span className="text-error text-sm">{errors.shop_address}</span>}
+                    </div>
+                    <div className="form-control">
+                        <label className="label">
+                            <span className="label-text">Cover Image</span>
+                        </label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            name="cover_image"
+                            onChange={(e) => setData('cover_image', e.target.files?.[0] ?? null)}
+                            className="file-input file-input-bordered"
+                        />
+                        {errors.cover_image && <span className="text-error text-sm">{String(errors.cover_image)}</span>}
+                        {user?.vendor?.cover_image && (
+                            <div className="mt-2 text-sm">
+                                Current: <a className="link" href={`/storage/${user.vendor.cover_image}`} target="_blank" rel="noreferrer">view</a>
+                            </div>
+                        )}
                     </div>
                     <input type="hidden" name="_token" value={token} />
                     <button type="submit" className="btn btn-primary w-full" disabled={processing}>

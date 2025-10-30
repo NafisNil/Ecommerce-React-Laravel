@@ -91,6 +91,23 @@ class ProductForm
                     ->rules(['integer', 'min:0'])
                     ->helperText('Enter a valid quantity (e.g., 10)')
                     ->columnSpan(1),
+                Toggle::make('is_featured')
+                    ->label('Featured')
+                    ->inline(false)
+                    ->columnSpan(1),
+                Toggle::make('is_offered')
+                    ->label('Offered')
+                    ->inline(false)
+                    ->reactive()
+                    ->columnSpan(1),
+                TextInput::make('offered_price')
+                    ->label('Offered Price')
+                    ->numeric()
+                    ->rules(['nullable','regex:/^\d+(\.\d{1,2})?$/'])
+                    ->visible(fn (callable $get) => (bool) $get('is_offered'))
+                    ->required(fn (callable $get) => (bool) $get('is_offered'))
+                    ->helperText('Shown when Offered is enabled')
+                    ->columnSpan(1),
                 Select::make('status')
                     ->label('Product Status')
                     ->options([ProductStatusEnum::labels()])->default(ProductStatusEnum::DRAFT->value)->required()

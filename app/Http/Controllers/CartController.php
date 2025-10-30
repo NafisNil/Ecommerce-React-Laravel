@@ -6,6 +6,7 @@ use App\Enums\OrderStatusEnum;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\WishlistItem;
 use App\Service\CartService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -46,6 +47,12 @@ class CartController extends Controller
             'option_ids' => 'nullable|array',
         ]);
         $cartService->addItemToCart($product, $data['quantity'], $data['option_ids'] ?? null);
+        // If this product exists in the user's wishlist, remove it after adding to cart
+        if ($request->user()) {
+            WishlistItem::where('user_id', $request->user()->id)
+                ->where('product_id', $product->id)
+                ->delete();
+        }
         return back()->with('success', 'Product added to cart successfully.');
     }
 

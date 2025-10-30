@@ -1,4 +1,5 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Heart } from 'lucide-react';
 import { Link as LinkIcon } from 'lucide-react';
 import React from 'react';
 import Authenticated from '@/layouts/AuthenticatedLayout';
@@ -270,7 +271,15 @@ function Show({ product, variationOptions }: { product: Product; variationOption
                             ))
                     }
                 </select>
-                <button onClick={onAddToCart} className='btn btn-primary'>Add to Cart</button>
+                                <button onClick={onAddToCart} className='btn btn-primary'>Add to Cart</button>
+                                <button
+                                    type="button"
+                                    onClick={() => router.post(route('wishlist.toggle', product.id), {}, { preserveScroll: true, preserveState: true })}
+                                    className='btn btn-ghost border'
+                                    aria-label="Toggle wishlist"
+                                >
+                                    <Heart size={18} className='mr-1'/> Wishlist
+                                </button>
             </div>
         )
     }

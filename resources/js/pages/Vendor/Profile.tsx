@@ -4,30 +4,42 @@ import { Head } from '@inertiajs/react';
 
 type ProductLite = {
 	id: number;
-	// Allow other properties without using `any`
-	[key: string]: unknown;
+	title: string;
+	slug: string;
+	image: string | null;
+	price: number;
+	user: { name: string; shop_name?: string | null };
+	department: { name: string; slug: string };
 };
 
 type Pagination<T> = {
 	data: T[];
 };
 
+type VendorLite = { cover_image?: string | null; cover_image_url?: string | null; shop_name?: string };
+
 export default function Profile({
 	products,
-}: { vendor?: unknown; products: Pagination<ProductLite> }) {
+	vendor,
+}: { vendor?: VendorLite | null; products: Pagination<ProductLite> }) {
+	const coverUrl = vendor?.cover_image_url ?? (vendor?.cover_image ? `/storage/${vendor.cover_image}` : null);
 	return (
 		<Authenticated>
 			<Head title="Welcome" />
 			<div className="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
-				<div className="hero bg-zinc-200 h-[300px]">
+				<div
+					className={`hero h-[30vh] md:h-[40vh] ${coverUrl ? 'bg-cover bg-center' : 'bg-zinc-200'}`}
+					style={coverUrl ? { backgroundImage: `url(${coverUrl})` } : undefined}
+				>
 					<div className="hero-content text-center">
-						<div className="max-w-md">
-							<h1 className="text-5xl font-bold">Hello there</h1>
-							<p className="py-6">
-								Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem
-								quasi. In deleniti eaque aut repudiandae et a id nisi.
-							</p>
-							<button className="btn btn-primary">Get Started</button>
+						<div className="max-w-md bg-slate-800 opacity-50 p-4" >
+							<h1 className="text-4xl font-bold text-white drop-shadow">{vendor?.shop_name ?? 'Vendor'}</h1>
+							{!coverUrl && (
+								<p className="py-6">
+									Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem
+									quasi. In deleniti eaque aut repudiandae et a id nisi.
+								</p>
+							)}
 						</div>
 					</div>
 				</div>

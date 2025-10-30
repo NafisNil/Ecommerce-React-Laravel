@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Container\Attributes\Auth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -16,10 +16,14 @@ class Product extends Model implements HasMedia
     //
     use InteractsWithMedia;
     protected $fillable = [
-        'title', 'slug', 'department_id', 'category_id', 'description', 'price', 'quantity', 'status'
+        'title', 'slug', 'department_id', 'category_id', 'description', 'price', 'quantity', 'status',
+        'is_offered', 'is_featured', 'offered_price'
     ];
 
     protected $casts = [
+        'is_offered' => 'boolean',
+        'is_featured' => 'boolean',
+        'offered_price' => 'decimal:2',
         // no JSON variation_types now; using related tables variation_types & variation_type_options
     ];
     public function registerMediaConversions(?Media $media = null): void
@@ -69,7 +73,8 @@ class Product extends Model implements HasMedia
 
     public function scopeForVendor(Builder $query) : Builder
     {
-        return $query->where('created_by', auth()->user()->id);
+    $userId = Auth::id();
+    return $query->when($userId, fn($q) => $q->where('created_by', $userId));
     }
 
 

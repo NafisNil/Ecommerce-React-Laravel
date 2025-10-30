@@ -5,8 +5,10 @@ type ProductLite = {
     slug: string;
     image: string | null;
     price: number;
+    is_offered?: boolean;
+    offered_price?: number | null;
     user: { name: string; shop_name?: string | null };
-    department: { name: string };
+    department: { name: string; slug: string };
 };
 import { Link, useForm } from '@inertiajs/react';
 import { Link as LinkIcon } from 'lucide-react';
@@ -68,7 +70,18 @@ const ProductItem = ({product} : {product: ProductLite}) => {
                     <div className='card-actions items-center justify-between mt-4'>
                         <button onClick={addToCart} className='btn btn-primary'>Add to Cart</button>
                         <p className='text-lg font-bold'>
-                            <CurrencyFormatter amount={product.price} />
+                            {product.is_offered && product.offered_price != null ? (
+                                <span>
+                                    <span className='text-error mr-2'>
+                                        <CurrencyFormatter amount={Number(product.offered_price)} />
+                                    </span>
+                                    <span className='line-through text-sm text-gray-500'>
+                                        <CurrencyFormatter amount={product.price} />
+                                    </span>
+                                </span>
+                            ) : (
+                                <CurrencyFormatter amount={product.price} />
+                            )}
                         </p>
                     </div>
                 </div>
