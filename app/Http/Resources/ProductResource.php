@@ -75,6 +75,8 @@ class ProductResource extends JsonResource
                     'variation_type_option_ids' => $var->variation_type_option_ids,
                 ];
             })->values()->toArray(),
+            'average_rating' => round((float) ($this->ratings()->avg('rating') ?? 0), 2),
+            'ratings_count' => (int) $this->ratings()->count(),
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SliderResource\Pages;
 use App\Models\Slider;
+use App\RolesEnum;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -13,6 +14,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Schemas\Schema;
+use Filament\Facades\Filament;
 
 class SliderResource extends Resource
 {
@@ -93,5 +95,12 @@ class SliderResource extends Resource
             'create' => Pages\CreateSlider::route('/create'),
             'edit' => Pages\EditSlider::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        
+        $user = Filament::auth()->user();
+        return $user && $user->hasRole(RolesEnum::Admin);
     }
 }

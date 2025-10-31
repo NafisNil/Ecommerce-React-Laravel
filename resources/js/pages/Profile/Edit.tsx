@@ -1,5 +1,5 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { PageProps } from '@/types';
+import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
+type PageProps<T> = T;
 import { Head } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
@@ -36,6 +36,12 @@ export default function Edit({
 
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
                         <DeleteUserForm className="max-w-xl" />
+                    </div>
+
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Orders</h3>
+                        <p className="text-sm text-gray-500 mb-4">View your order history and status.</p>
+                        <a href={route('orders.index')} className="btn btn-sm btn-primary">Go to My Orders</a>
                     </div>
                 </div>
             </div>

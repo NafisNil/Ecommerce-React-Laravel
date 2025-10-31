@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\WishlistItem;
 use App\Service\CartService;
+use App\Models\Coupon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Stripe\Stripe;
@@ -193,5 +194,31 @@ class CartController extends Controller
     {
         $cartService->clearCart();
         return back()->with('success', 'Cart cleared successfully.');
+    }
+
+    public function applyCoupon(Request $request, CartService $cartService)
+    {
+        $data = $request->validate([
+            'code' => 'required|string',
+        ]);
+        $code = trim($data['code']);
+        $coupon = Coupon::where('code', $code)->first();
+        $total = (float) $cartService->getTotalPrice();
+
+        if (!$coupon) {
+            return back()->with('error', 'Coupon not found.');
+        }
+        if (!$coupon->isValidForTotal($total)) {
+            return back()->with('error', 'Coupon is not valid for this order.');
+        }
+
+        $request->session()->put('coupon_code', $coupon->code);
+        return back()->with('success', 'Coupon applied.');
+    }
+
+    public function removeCoupon(Request $request)
+    {
+        $request->session()->forget('coupon_code');
+        return back()->with('success', 'Coupon removed.');
     }
 }

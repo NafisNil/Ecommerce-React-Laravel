@@ -1,5 +1,9 @@
 import React from 'react';
-import type { GroupedCartItems, PageProps, CartItem as CartItemType, User } from '@/types';
+// Local lightweight types to avoid ambient type coupling
+type User = { id: number; name: string };
+type CartItemType = { id: number; product_id: number; title: string; slug: string; image: string | null; quantity: number; price: number; option_ids: Record<string, number | null> };
+type GroupedCartItems = { items: CartItemType[]; user: User | null; total_price: number; total_quantity: number };
+type PageProps<T> = T & { csrf_token: string };
 import Authenticated from '@/layouts/AuthenticatedLayout';
 import { Link, Head, router } from '@inertiajs/react';
 import CurrencyFormatter from '@/components/Core/CurrencyFormatter';
@@ -13,7 +17,10 @@ function Index({
     cart_items,
     cart_total_price,
     cart_total_quantity,
-}: PageProps<{ cart_items: Record<number, GroupedCartItems> | CartItemType[] }>) {
+    applied_coupon_code,
+    cart_discount,
+    cart_grand_total,
+}: PageProps<{ cart_items: Record<number, GroupedCartItems> | CartItemType[]; cart_total_price: number; cart_total_quantity: number } & { applied_coupon_code?: string | null; cart_discount?: number; cart_grand_total?: number }>) {
     // Normalize cart_items to an array of GroupedCartItems
     const grouped: GroupedCartItems[] = React.useMemo(() => {
         if (!cart_items) return [];
@@ -123,7 +130,27 @@ function Index({
                 </div>
                 <div className="flex-1 card bg-white dark:bg-gray-800 shadow-md p-4  lg:min-w-[300px] order-1 lg:order-2">
                     <div className="card-body">
-                            Subtotal ({cart_total_quantity} items): <span className="font-bold"><CurrencyFormatter amount={cart_total_price} /></span>
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between"><span>Subtotal ({cart_total_quantity} items)</span><span className="font-semibold"><CurrencyFormatter amount={cart_total_price} /></span></div>
+                                {cart_discount ? (
+                                    <div className="flex items-center justify-between text-success"><span>Discount</span><span className="font-semibold">-<CurrencyFormatter amount={cart_discount} /></span></div>
+                                ) : null}
+                                <div className="flex items-center justify-between text-lg border-t pt-2"><span>Total</span><span className="font-bold"><CurrencyFormatter amount={cart_grand_total ?? cart_total_price} /></span></div>
+                            </div>
+                            <div className="mt-4">
+                                <form method="post" action={route('cart.coupon.apply')} className="join w-full">
+                                    <input type="hidden" name="_token" value={csrf_token} />
+                                    <input type="text" name="code" defaultValue={applied_coupon_code ?? ''} placeholder="Coupon code" className="input input-bordered join-item w-full" />
+                                    <button type="submit" className="btn btn-primary join-item">Apply</button>
+                                </form>
+                                {applied_coupon_code && (
+                                    <form method="post" action={route('cart.coupon.remove')} className="mt-2">
+                                        <input type="hidden" name="_method" value="DELETE" />
+                                        <input type="hidden" name="_token" value={csrf_token} />
+                                        <button type="submit" className="btn btn-xs btn-ghost">Remove coupon ({applied_coupon_code})</button>
+                                    </form>
+                                )}
+                            </div>
                             <form action={route('cart.checkout')} method='get'>
                                 <PrimaryButton className='rounded-full'>
                                     <CreditCardIcon className='h-5 w-5'/>

@@ -104,6 +104,11 @@ class Product extends Model implements HasMedia
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function ratings()
+    {
+        return $this->hasMany(ProductRating::class);
+    }
+
     public function getPriceForOptions($optionIds = []){
         $optionIds = array_values($optionIds);
         sort($optionIds);

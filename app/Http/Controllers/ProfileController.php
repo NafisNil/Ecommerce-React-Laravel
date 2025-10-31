@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Order;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,9 +19,24 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $orders = Order::withCount('orderItems')
+            ->where('user_id', $request->user()->id)
+            ->orderByDesc('created_at')
+            ->get(['id', 'total_price', 'status', 'created_at'])
+            ->map(function ($o) {
+                return [
+                    'id' => $o->id,
+                    'status' => (string) $o->status,
+                    'total_price' => (float) $o->total_price,
+                    'items_count' => (int) $o->order_items_count,
+                    'created_at' => $o->created_at?->toDateTimeString(),
+                ];
+            });
+
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'orders' => $orders,
         ]);
     }
 
@@ -29,13 +45,14 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+    $user = Auth::user();
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
         return Redirect::route('profile.edit');
     }

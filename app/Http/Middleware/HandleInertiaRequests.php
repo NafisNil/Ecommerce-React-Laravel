@@ -9,6 +9,7 @@ use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 use App\Service\CartService;
 use App\Http\Resources\DepartmentResource;
+use App\Models\Coupon;
 use App\Models\WishlistItem;
 class HandleInertiaRequests extends Middleware
 {
@@ -37,6 +38,16 @@ class HandleInertiaRequests extends Middleware
         $cartService = app(CartService::class);
         $totalQuantity = $cartService->getTotalQuantity();
         $totalPrice = $cartService->getTotalPrice();
+        $couponCode = session('coupon_code');
+        $coupon = $couponCode ? Coupon::where('code', $couponCode)->first() : null;
+        $discount = 0.0;
+        if ($coupon && $coupon->isValidForTotal((float)$totalPrice)) {
+            $discount = $coupon->getDiscountForTotal((float)$totalPrice);
+        } elseif ($couponCode) {
+            // Remove stale/invalid coupon
+            session()->forget('coupon_code');
+        }
+        $grandTotal = max(((float)$totalPrice) - $discount, 0.0);
     $cartItems = $cartService->getCartItems();
         $departments = Department::published()->with('categories')->orderBy('created_at', 'desc')->limit(10)->get();
 
@@ -58,6 +69,9 @@ class HandleInertiaRequests extends Middleware
             'cart_items' => $cartItems,
             'cart_total_quantity' => $totalQuantity,
             'cart_total_price' => $totalPrice,
+            'applied_coupon_code' => $coupon?->code,
+            'cart_discount' => $discount,
+            'cart_grand_total' => $grandTotal,
             'departments' => DepartmentResource::collection($departments)->toArray($request),
             'keyword' => $request->input('keyword', null),
             'wishlist_count' => fn () => $request->user() ? WishlistItem::where('user_id', $request->user()->id)->count() : 0,

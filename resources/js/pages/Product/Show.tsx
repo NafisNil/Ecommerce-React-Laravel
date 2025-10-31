@@ -41,6 +41,9 @@ type Product = {
     variations?: ProductVariation[];
     user: { name: string; shop_name?: string | null };
     department: { name: string };
+    average_rating?: number;
+    ratings_count?: number;
+    user_rating?: number;
 };
 
 function Show({ product, variationOptions }: { product: Product; variationOptions: number[] | Record<number, number> }) {
@@ -321,8 +324,12 @@ function Show({ product, variationOptions }: { product: Product; variationOption
                             &nbsp;
                             <Link href="/" className='link link-hover'> <LinkIcon className='inline mb-1' size={16}/> {product.department.name}</Link>
                         </p>
-                        {/* Debug block removed after verification */}
-                        {/* <p className='mb-4'>{product.description}</p> */}
+                        {/* Rating summary and form */}
+                        <div className="mb-3 flex items-center gap-3">
+                            <StarDisplay value={Math.round((product.average_rating ?? 0) * 2) / 2} />
+                            <span className="text-sm text-neutral-600">{(product.average_rating ?? 0).toFixed(1)} ({product.ratings_count ?? 0})</span>
+                        </div>
+                        <RateProduct productId={product.id} current={product.user_rating ?? 0} />
                         <div className="mb-4 pb-3 border-b border-neutral-200 flex items-end justify-between">
                             <div className="text-4xl font-semibold tracking-tight">
                                 <CurrencyFormatter amount={computedProduct.price} currency="USD" />
@@ -352,3 +359,51 @@ function Show({ product, variationOptions }: { product: Product; variationOption
 }
 
 export default Show;
+
+function StarDisplay({ value }: { value: number }) {
+    const stars = [1, 2, 3, 4, 5];
+    return (
+        <div className="rating rating-sm">
+            {stars.map((i) => {
+                const filled = value >= i - 0.25;
+                return (
+                    <input key={i} type="radio" className={`mask mask-star-2 ${filled ? 'bg-yellow-400' : 'bg-gray-300'}`} readOnly />
+                );
+            })}
+        </div>
+    );
+}
+
+function RateProduct({ productId, current }: { productId: number; current: number }) {
+    const [rating, setRating] = React.useState<number>(current || 0);
+    const [submitting, setSubmitting] = React.useState(false);
+    const onClick = (v: number) => setRating(v);
+    const onSubmit = () => {
+        if (!rating) return;
+        setSubmitting(true);
+        router.post(route('products.rate', productId), { rating }, {
+            preserveScroll: true,
+            preserveState: true,
+            onFinish: () => setSubmitting(false),
+        });
+    };
+
+    return (
+        <div className="mb-4">
+            <div className="rating rating-md mr-3 inline-flex align-middle">
+                {[1,2,3,4,5].map((i) => (
+                    <input
+                        key={i}
+                        type="radio"
+                        name="rating"
+                        className={`mask mask-star-2 ${i <= rating ? 'bg-amber-400' : 'bg-gray-300'}`}
+                        onClick={() => onClick(i)}
+                    />
+                ))}
+            </div>
+            <button className="btn btn-sm btn-outline" disabled={!rating || submitting} onClick={onSubmit}>
+                {submitting ? 'Submitting…' : (current ? 'Update Rating' : 'Rate this product')}
+            </button>
+        </div>
+    );
+}

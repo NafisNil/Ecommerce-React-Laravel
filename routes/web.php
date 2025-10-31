@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\WishlistController;
@@ -27,6 +28,8 @@ Route::controller(CartController::class)->group(function () {
     Route::put('/cart/update/{product}', 'update')->name('cart.update');
     Route::delete('/cart/destroy/{product}', 'destroy')->name('cart.destroy');
     Route::delete('/cart/clear', 'clear')->name('cart.clear');
+    Route::post('/cart/coupon/apply', 'applyCoupon')->name('cart.coupon.apply');
+    Route::delete('/cart/coupon/remove', 'removeCoupon')->name('cart.coupon.remove');
 });
 
 Route::post('stripe/webhook', [StripeController::class, 'webhook'])
@@ -48,6 +51,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Orders
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    // Ratings
+    Route::post('/products/{product}/rate', [ProductController::class, 'rate'])->name('products.rate');
 
 
     Route::middleware(['verified'])->group(function () {
